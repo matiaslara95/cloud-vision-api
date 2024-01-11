@@ -4,7 +4,6 @@ const axios = require("axios");
 const { google } = require('googleapis');
 const jwt = require("jsonwebtoken");
 
-
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri = `${ process.env.ROOT_URI }auth/google`;
