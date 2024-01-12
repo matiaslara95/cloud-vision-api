@@ -3,8 +3,9 @@ const router = express.Router();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
-const loginGoogleApis = require('./controllers/cloud-vision/login-google-apis');
-const filesCloudVision = require('./controllers/cloud-vision/files-cloud-vision');
+const loginGoogleApis = require('./controllers/google/login-google-apis');
+const filesCloudVision = require('./controllers/cloud-vision/vision-files');
+const faceCloudVision = require('./controllers/cloud-vision/vision-face-detection');
 const { Router } = require("express");
 
 router.get("/", (request, response, next) => {
@@ -35,6 +36,21 @@ router.get("/cloud/files/getInfo", (req, res) => {
   return filesCloudVision.LocalizeObjects();
 })
 
+router.get("/cloud/files/batch", (req, res) => {
+  return filesCloudVision.BatchAnnotateFiles();
+})
+
+router.get("/cloud/files/landmarks", (req, res) => {
+  return filesCloudVision.DetectLandmarks();
+})
+
+router.get("/cloud/files/label", async (req, res) => {
+  return await filesCloudVision.DetectLabels();
+})
+
+router.get("/cloud/images/face", async (req, res) => {
+  return await faceCloudVision.DetectFaces();
+})
 
 //NOT WORKING (AT THE MOMENT)
 // router.get("/auth/me", async (req, res) => {
