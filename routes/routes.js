@@ -36,8 +36,8 @@ router.get("/cloud/files/getInfo", (req, res) => {
   return filesCloudVision.LocalizeObjects();
 })
 
-router.get("/cloud/files/batch", (req, res) => {
-  return filesCloudVision.BatchAnnotateFiles();
+router.get("/cloud/files/text", (req, res) => {
+  return filesCloudVision.DetectFulltext();
 })
 
 router.get("/cloud/files/landmarks", (req, res) => {
