@@ -14,6 +14,7 @@ const CONFIG = {
         client_email: process.env.CLIENT_EMAIL,
     }
 }
+
 exports.DetectFulltext = async () => {
     // Creates a client
     const client = new vision.ImageAnnotatorClient(CONFIG);
@@ -31,9 +32,10 @@ exports.DetectFulltext = async () => {
     document.language = "English";
     document.dateScanned = new Date();
     document.text = fullTextAnnotation.text;
-    document.type = "imagen";    
+    document.type = "imagen";   
 
-    dbConnection.CreateDocument("documents", document);
+    return await dbConnection.CreateDocument("documents", document);
+    
     // fullTextAnnotation.pages.forEach(page => {
     //     page.blocks.forEach(block => {
     //         console.log(`Block confidence: ${block.confidence}`);
@@ -52,29 +54,37 @@ exports.DetectFulltext = async () => {
     //     });
     // });
     // [END vision_fulltext_detection]
-    return fullTextAnnotation.text;
+    // return fullTextAnnotation.text;
 }
 
+/* 
+    Landmark Detection detects popular natural and human-made structures within an image.
+*/
 exports.DetectLandmarks = async () => {
     // Creates a client
     const client = new vision.ImageAnnotatorClient();
 
-    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\family.jpg';
+    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\paris.jpg';
 
     // Performs landmark detection on the local file
     const [result] = await client.landmarkDetection(fileName);
-    fs.writeFile('result.txt', JSON.stringify([result]), 'utf8');
     const landmarks = result.landmarkAnnotations;
     console.log('Landmarks:');
     landmarks.forEach(landmark => console.log(landmark));
     // [END vision_landmark_detection]
+    return JSON.stringify([result]);
 }
 
+/**
+ * The Vision API can detect and extract information about entities in an image, across a broad group of categories.
+    Labels can identify general objects, locations, activities, animal species, products, and more. If you need targeted custom labels, Cloud AutoML Vision allows you to train a custom machine learning model to classify images.
+    Labels are returned in English only. The Cloud Translation API can translate English labels into any of a number of other languages.
+ */
 exports.DetectLabels = async (req, res) => {
     // Creates a client
     const client = new vision.ImageAnnotatorClient(CONFIG);
 
-    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\family.jpg';
+    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\paris.jpg';
 
     // Performs label detection on the local file
     const [result] = await client.labelDetection(fileName);
@@ -82,17 +92,26 @@ exports.DetectLabels = async (req, res) => {
     console.log('Labels:');
     labels.forEach(label => console.log(label.description));
     // [END vision_label_detection]
-    return JSON.stringify([result]);
+    return JSON.stringify(labels);
 }
 
+/*
+ *  The Vision API can detect and extract multiple objects in an image with Object Localization.
+    
+    Object localization identifies multiple objects in an image and provides a LocalizedObjectAnnotation for each object in the image. 
+    Each LocalizedObjectAnnotation identifies information about the object, the position of the object, and rectangular bounds for the region of the image that contains the object. 
 
+    Object localization identifies both significant and less-prominent objects in an image.
+
+    Object information is returned in English only. The Cloud Translation can translate English labels into various other languages.    
+*/
 exports.LocalizeObjects = async () => {
     const fs = require('fs');
 
     // Creates a client
-    const client = new vision.ImageAnnotatorClient();
+    const client = new vision.ImageAnnotatorClient(CONFIG);
 
-    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\torres-del-paine.jpg';
+    const fileName = 'C:\\Users\\Administrador\\source\\repos\\cloud-vision-api\\files\\motorway.jpg';
 
     const request = {
         image: { content: fs.readFileSync(fileName) },
@@ -100,13 +119,13 @@ exports.LocalizeObjects = async () => {
 
     const [result] = await client.objectLocalization(request);
     const objects = result.localizedObjectAnnotations;
-    console.log(JSON.stringify(objects))
-    objects.forEach(object => {
-      console.log(`Name: ${object.name}`);
-      console.log(`Confidence: ${object.score}`);
-      const vertices = object.boundingPoly.normalizedVertices;
-      vertices.forEach(v => console.log(`x: ${v.x}, y:${v.y}`));
-    });
+    // objects.forEach(object => {
+    //   console.log(`Name: ${object.name}`);
+    //   console.log(`Confidence: ${object.score}`);
+    //   const vertices = object.boundingPoly.normalizedVertices;
+    //   vertices.forEach(v => console.log(`x: ${v.x}, y:${v.y}`));
+    // });
     // [END vision_localize_objects]
+    return JSON.stringify(objects);
 }
 

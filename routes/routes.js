@@ -32,24 +32,24 @@ console.log("token", token)
   res.redirect(process.env.ROOT_URI)
 })
 
-router.get("/cloud/files/getInfo", (req, res) => {
-  return filesCloudVision.LocalizeObjects();
+router.get("/cloud/files/localize", async (req, res) => {
+  return res.send(await filesCloudVision.LocalizeObjects());
 })
 
-router.get("/cloud/files/text", (req, res) => {
-  return filesCloudVision.DetectFulltext();
+router.get("/cloud/files/text", async (req, res) => {
+  return res.send(await filesCloudVision.DetectFulltext());
 })
 
-router.get("/cloud/files/landmarks", (req, res) => {
-  return filesCloudVision.DetectLandmarks();
+router.get("/cloud/files/landmarks", async (req, res) => {
+  return res.send(await filesCloudVision.DetectLandmarks());
 })
 
 router.get("/cloud/files/label", async (req, res) => {
-  return await filesCloudVision.DetectLabels();
+  return res.send(await filesCloudVision.DetectLabels());
 })
 
 router.get("/cloud/images/face", async (req, res) => {
-  return await faceCloudVision.DetectFaces();
+  return res.send(await faceCloudVision.DetectFaces());
 })
 
 //NOT WORKING (AT THE MOMENT)
