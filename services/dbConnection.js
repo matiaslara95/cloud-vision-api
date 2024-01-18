@@ -39,7 +39,7 @@ exports.CreateDocument = async (collection, newDocument) => {
     }
 }
 
-exports.FindOneListingID = async (collection, idDocument) => {
+exports.FindOneCollectionByID = async (collection, idDocument) => {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
@@ -59,36 +59,72 @@ exports.FindOneListingID = async (collection, idDocument) => {
     }
 }
 
-exports.FindListingsByLanguageOrType = async (collection, {
-    language = "",
-    type = "",
-    maximumNumberOfResults = Number.MAX_SAFE_INTEGER
-} = {}) => {
-    const cursor = client.db("dbCloudVision").collection(collection).find(
-        {
-            language: { $gte: language },
-            type: { $gte: type }
+exports.FindCollection = async (collection) => {
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await client.connect();
+
+        const result = await client.db("dbCloudVision").collection(collection).find();
+
+        if (result) {
+            console.log(`Found a listing in the collection`);
+            console.log(result);
+        } else {
+            console.log(`No listings found with the id '${idDocument}'`);
         }
-    ).sort({ last_review: -1 })
-        .limit(maximumNumberOfResults);
+        return JSON.stringify(result);
+    } finally {
+        // Ensures that the client will close when you finish/error
+        await client.close();
+    }
+}
 
-    const results = await cursor.toArray();
-    if (results.length > 0) {
-        console.log(`Found listing(s) in ${language} and ${type} type:`);
-        return JSON.stringify(results);
-        // results.forEach((result, i) => {
-        //     date = new Date(result.dateScanned).toDateString();
+// exports.FindListingsByLanguageOrType = async (collection, {
+//     language = "",
+//     type = "",
+//     maximumNumberOfResults = Number.MAX_SAFE_INTEGER
+// } = {}) => {
+//     const cursor = client.db("dbCloudVision").collection(collection).find(
+//         {
+//             language: { $gte: language },
+//             type: { $gte: type }
+//         }
+//     ).sort({ last_review: -1 })
+//         .limit(maximumNumberOfResults);
 
-        //     console.log();
-        //     console.log(`${i + 1}. name: ${result.language}`);
-        //     console.log(`   _id: ${result._id}`);
-        //     console.log(`   bedrooms: ${result.text}`);
-        //     console.log(`   bathrooms: ${result.type}`);
-        //     console.log(`   most recent review date: ${new Date(result.dateScanned).toDateString()}`);
-        // });
-    } else {
-        console.log(`No listings found in ${language} language and ${type} type`);
-        JSON.stringify(results);
+//     const results = await cursor.toArray();
+//     if (results.length > 0) {
+//         console.log(`Found listing(s) in ${language} and ${type} type:`);
+//         return JSON.stringify(results);
+//         // results.forEach((result, i) => {
+//         //     date = new Date(result.dateScanned).toDateString();
+
+//         //     console.log();
+//         //     console.log(`${i + 1}. name: ${result.language}`);
+//         //     console.log(`   _id: ${result._id}`);
+//         //     console.log(`   bedrooms: ${result.text}`);
+//         //     console.log(`   bathrooms: ${result.type}`);
+//         //     console.log(`   most recent review date: ${new Date(result.dateScanned).toDateString()}`);
+//         // });
+//     } else {
+//         console.log(`No listings found in ${language} language and ${type} type`);
+//         JSON.stringify(results);
+//     }
+// }
+
+exports.UpdateCollectionByID = async (collection, idCollection, updatedCollection) => {
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await client.connect();
+
+        const result = await client.db("dbCloudVision").collection(collection)
+            .updateOne({ _id: idCollection }, { $set: updatedCollection });
+
+        console.log(`${result.matchedCount} document(s) matched the query criteria.`);
+        console.log(`${result.modifiedCount} document(s) was/were updated.`);
+    } finally {
+        // Ensures that the client will close when you finish/error
+        await client.close();
     }
 }
 
@@ -99,21 +135,6 @@ exports.DeleteListingByID = async (collection, idDocument) => {
         const result = await client.db("dbCloudVision").collection(collection)
             .deleteOne({ _id: idDocument });
         console.log(`${result.deletedCount} document(s) was/were deleted.`);
-        
-        return JSON.stringify(result);
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
-    }
-}
-
-exports.DeleteListingsScrapedBeforeDate = async (collection, date = new Date()) => {
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        const result = await client.db("dbCloudVision").collection(collection)
-            .deleteMany({ "dateScanned": { $lt: date } });
-        console.log(`${result.deletedCount} document(s) was/were deleted.`);
 
         return JSON.stringify(result);
     } finally {
@@ -121,3 +142,18 @@ exports.DeleteListingsScrapedBeforeDate = async (collection, date = new Date()) 
         await client.close();
     }
 }
+
+// exports.DeleteListingsScrapedBeforeDate = async (collection, date = new Date()) => {
+//     try {
+//         // Connect the client to the server	(optional starting in v4.7)
+//         await client.connect();
+//         const result = await client.db("dbCloudVision").collection(collection)
+//             .deleteMany({ "dateScanned": { $lt: date } });
+//         console.log(`${result.deletedCount} document(s) was/were deleted.`);
+
+//         return JSON.stringify(result);
+//     } finally {
+//         // Ensures that the client will close when you finish/error
+//         await client.close();
+//     }
+// }

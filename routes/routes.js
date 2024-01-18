@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const loginGoogleApis = require('./controllers/google/login-google-apis');
 const filesCloudVision = require('./controllers/cloud-vision/vision-files');
 const faceCloudVision = require('./controllers/cloud-vision/vision-face-detection');
-const { Router } = require("express");
+const imagesController = require('./controllers/images/images')
 
 router.get("/", (request, response, next) => {
   response.json({ message: "Hey! This is your server response!" });
@@ -32,6 +32,8 @@ console.log("token", token)
   res.redirect(process.env.ROOT_URI)
 })
 
+
+//VISION CLOUD
 router.get("/cloud/files/localize", async (req, res) => {
   return res.send(await filesCloudVision.LocalizeObjects());
 })
@@ -48,8 +50,39 @@ router.get("/cloud/files/label", async (req, res) => {
   return res.send(await filesCloudVision.DetectLabels());
 })
 
+//********FACE DETECTION
 router.get("/cloud/images/face", async (req, res) => {
   return res.send(await faceCloudVision.DetectFaces());
+})
+
+//********GET IMAGES COLLECTION
+router.get("/images", async (req, res) => {
+  return res.send(await imagesController.GetAllImages());
+})
+
+router.get("/images", async (req, res) => {
+  return res.send(await imagesController.GetImagesByID(req.id));
+})
+
+router.put("/images", async (req, res) => {
+  return res.send(await imagesController.UpdateImagesByID(req));
+})
+
+router.delete("/images", async (req, res) => {
+  return res.send(await imagesController.DeleteImagesByID(req.id));
+})
+
+//********GET IMAGES COLLECTION
+router.get("/documents", async (req, res) => {
+  return res.send(await imagesController.GetAllImages());
+})
+
+router.get("/documents", async (req, res) => {
+  return res.send(await imagesController.GetImagesByID(req.id));
+})
+
+router.delete("/documents", async (req, res) => {
+  return res.send(await imagesController.DeleteImagesByID(req.id));
 })
 
 //NOT WORKING (AT THE MOMENT)
@@ -64,6 +97,5 @@ router.get("/cloud/images/face", async (req, res) => {
 //     res.send(null)
 //   }
 // })
-
 
 module.exports = router;
