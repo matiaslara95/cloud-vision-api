@@ -2,7 +2,6 @@ const mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId;
 
-
 const Document = new Schema({
     language: { type: String, required: true, trim: true },
     dateScanned: { type: Date, required: true, trim: true },

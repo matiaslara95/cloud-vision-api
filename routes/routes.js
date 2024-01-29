@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
 
-const loginGoogleApis = require('./controllers/google/login-google-apis');
+const authMiddle = require('./controllers/middleware/authMiddleware');
+const authUser = require('./controllers/auth/auth-user');
+const authGoogleUser = require('./controllers/auth/google/auth-google-user');
 const filesCloudVision = require('./controllers/cloud-vision/vision-files');
 const faceCloudVision = require('./controllers/cloud-vision/vision-face-detection');
 const imagesController = require('./controllers/images/images')
@@ -13,15 +14,24 @@ router.get("/", (request, response, next) => {
   next();
 });
 
+//NORMAL AUTH
+router.post('/auth/register', async (req, res) => {
+  return res.send(authUser.RegisterUser(req))
+})
+
+router.post('/auth/login', async (req, res) => {
+  return res.send(authUser.LoginUser(req))
+})
+
 //GET AUTH GOOGLE 
 router.get("/auth/google/url", (req, response) => {
-  return response.send(loginGoogleApis.getGoogleAuthURL());
+  return response.send(authGoogleUser.getGoogleAuthURL());
 })
 
 //GET TOKEN GOOGLE AND CREATE COOKIE WITH TOKEN
 router.get("/auth/google", async (req, res) => {
   const code = req.query.code
-  const token = await loginGoogleApis.getGoogleToken({ code });
+  const token = await authGoogleUser.getGoogleToken({ code });
 console.log("token", token)
   res.cookie(process.env.COOKIE_NAME, token, {
     maxAge: 900000,
@@ -34,7 +44,7 @@ console.log("token", token)
 
 
 //VISION CLOUD
-router.get("/cloud/files/localize", async (req, res) => {
+router.get("/cloud/files/localize", authMiddle.VerifyToken, async (req, res) => {
   return res.send(await filesCloudVision.LocalizeObjects());
 })
 

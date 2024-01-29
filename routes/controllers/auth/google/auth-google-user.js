@@ -3,10 +3,12 @@ const { stringify } = require("querystring");
 const axios = require("axios");
 const { google } = require('googleapis');
 const jwt = require("jsonwebtoken");
+const dbConnectionUser = require("../../../../services/dbConnectionUser");
+const mongoose = require('mongoose'), Schema = mongoose.Schema, UserGoogle = require('../../../models/db/user');
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = `${ process.env.ROOT_URI }auth/google`;
+const redirectUri = `${process.env.ROOT_URI}auth/google`;
 
 exports.getGoogleAuthURL = () => {
   const rootURL = "https://accounts.google.com/o/oauth2/auth";
@@ -50,9 +52,20 @@ exports.getGoogleToken = async ({ code }, res) => {
         }
       }
     )
-    .then(response => {
+    .then(async response => {
       console.log("Obtuve usuario", response.data)
-      return response.data
+
+      const userExist = await dbConnectionUser.GetUserGoogleByGoogleID(response.data.id);
+      //if the user doesn't exist in the DB, we'll create it
+      if (userExist == null) {
+        console.log("Create user because doesnt exist in the DB", userExist);
+        await CreateUserGoogle(response.data);
+      }
+      else{
+        console.log("The user already exist in our DB", userExist);
+      }
+
+      return response.data;
     })
     .catch(error => {
       console.log("access_token", access_token)
@@ -61,7 +74,9 @@ exports.getGoogleToken = async ({ code }, res) => {
       throw new Error(error.message)
     })
 
-  const token = jwt.sign(googleUser, process.env.JWT_SECRET)
+  const token = jwt.sign(googleUser, process.env.JWT_SECRET, {
+    expiresIn: '1h',
+  })
 
   return token;
 }
@@ -93,7 +108,7 @@ exports.getGoogleUser = async () => {
       throw new Error(error.message)
     })
 
-  const token = jwt.sign(googleUser, JWT_SECRET)
+  const token = jwt.sign(googleUser, process.env.JWT_SECRET)
 
   res.cookie(COOKIE_NAME, token, {
     maxAge: 900000,
@@ -102,4 +117,21 @@ exports.getGoogleUser = async () => {
   })
 
   res.redirect(process.env.ROOT_URI)
+}
+
+CreateUserGoogle = async (userGoogle) => {
+  console.log("Usuario Google", userGoogle)
+  let newUser = new UserGoogle();
+  newUser.googleId = userGoogle.id;
+  newUser.email = userGoogle.email;
+  newUser.given_name = userGoogle.given_name;
+  newUser.family_name = userGoogle.family_name;
+  newUser.verified_email = userGoogle.verified_email;
+  newUser.dateCreate = new Date();
+  console.log("Nuevo usuario", newUser)
+  return await dbConnectionUser.CreateUserGoogle(newUser);
+}
+
+ValidateUserGoogle = (idUserGoogle) => {
+  return dbConnectionUser.FindUserGoogleByGoogleID(idUserGoogle);
 }

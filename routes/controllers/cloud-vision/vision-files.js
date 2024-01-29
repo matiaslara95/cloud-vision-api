@@ -1,6 +1,5 @@
 require("dotenv").config();
 const vision = require('@google-cloud/vision');
-const { stringify } = require("querystring");
 const fs = require('fs').promises;
 const dbConnection = require("../../../services/dbConnection");
 const mongoose = require('mongoose'), Schema = mongoose.Schema, Document = require('../../models/db/documents');
